@@ -1,0 +1,31 @@
+name: Update portfolio galleries
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "images/portfolio/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-gallery:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out website
+        uses: actions/checkout@v4
+      - name: Add new photographs and update counts
+        run: python3 tools/update_gallery.py
+      - name: Save generated gallery
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "Gallery is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Update portfolio galleries"
+          git push
